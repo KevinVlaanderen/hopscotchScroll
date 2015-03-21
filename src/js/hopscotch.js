@@ -1787,7 +1787,7 @@
         parents.forEach(function(parent, index) {
           if (index < numParents - 1) {
             var overflow = window.getComputedStyle(parent).getPropertyValue("overflow");
-            if (overflow === "auto") {
+            if (overflow === "auto" || overflow === "scroll") {
               utils.addEvtListener(parent, 'scroll', scrollFn);
             }
           }
