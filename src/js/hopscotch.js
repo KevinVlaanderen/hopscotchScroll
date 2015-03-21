@@ -1357,6 +1357,15 @@
     },
 
     /**
+     * Used for scrolling event on target ancestor
+     *
+     * @private
+     */
+    scrollFn = function() {
+      getBubble().setPosition(getCurrStep());
+    },
+
+    /**
      * adjustWindowScroll
      *
      * Checks if the bubble or target element is partially or completely
@@ -1740,6 +1749,19 @@
       // Update bubble for current step
       currStepNum = stepNum;
 
+      var parents = [];
+      var p = utils.getStepTarget(getCurrStep()).parentNode;
+
+      while (p !== null) {
+          var o = p;
+          parents.push(o);
+          p = o.parentNode;
+      }
+
+      parents.forEach(function(parent, index) {
+        utils.removeEvtListener(parent, 'scroll', scrollFn);
+      });
+
       bubble.hide(false);
 
       bubble.render(step, stepNum, function(adjustScroll) {
@@ -1750,6 +1772,26 @@
         else {
           showBubble();
         }
+
+        var parents = [];
+        var p = targetEl.parentNode;
+
+        while (p !== null) {
+            var o = p;
+            parents.push(o);
+            p = o.parentNode;
+        }
+
+        var numParents = parents.length;
+
+        parents.forEach(function(parent, index) {
+          if (index < numParents - 1) {
+            var overflow = window.getComputedStyle(parent).getPropertyValue("overflow");
+            if (overflow === "auto") {
+              utils.addEvtListener(parent, 'scroll', scrollFn);
+            }
+          }
+        });
 
         // If we want to advance to next step when user clicks on target.
         if (step.nextOnTargetClick) {

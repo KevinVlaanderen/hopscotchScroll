@@ -1,0 +1,26 @@
+body {
+  height: 100%;
+}
+
+.container {
+  overflow: none;
+}
+
+#top {
+  height: 150px;
+}
+
+#middle {
+  overflow: auto;
+  background-color: gray;
+}
+
+.middle-row {
+  height: 150px;
+}
+
+#bottom {
+  height: 50px;
+  position: absolute;
+  bottom: 0;
+}
