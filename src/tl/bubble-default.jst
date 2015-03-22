@@ -13,9 +13,9 @@
     <% if(step.content  !== ''){ %><div class="hopscotch-content"><%= optEscape(step.content, tour.unsafe) %></div><% } %>
   </div>
   <div class="hopscotch-actions">
-    <% if(buttons.showPrev){ %><button class="hopscotch-nav-button prev hopscotch-prev"><%= i18n.prevBtn %></button><% } %>
-    <% if(buttons.showCTA){ %><button class="hopscotch-nav-button next hopscotch-cta"><%= buttons.ctaLabel %></button><% } %>
-    <% if(buttons.showNext){ %><button class="hopscotch-nav-button next hopscotch-next"><%= i18n.nextBtn %></button><% } %>
+    <% if(buttons.showPrev){ %><button class="hopscotch-nav-button prev hopscotch-prev btn btn-sm"><%= i18n.prevBtn %></button><% } %>
+    <% if(buttons.showCTA){ %><button class="hopscotch-nav-button next hopscotch-cta btn btn-primary btn-sm"><%= buttons.ctaLabel %></button><% } %>
+    <% if(buttons.showNext){ %><button class="hopscotch-nav-button next hopscotch-next btn btn-primary btn-sm"><%= i18n.nextBtn %></button><% } %>
   </div>
   <% if(buttons.showClose){ %><a title="<%= i18n.closeTooltip %>" href="#" class="hopscotch-bubble-close hopscotch-close"><%= i18n.closeTooltip %></a><% } %>
 </div>
