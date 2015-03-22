@@ -936,6 +936,21 @@
       setTimeout(function() {
         utils.removeClass(self.element, fadeClass);
       }, fadeDur);
+
+      // Add scroll event to new target's scrolling ancestors
+      var ancestors = self.getTargetAncestors();
+      var numAncestors = ancestors.length;
+
+      ancestors.forEach(function(ancestor, index) {
+        // Do not attach event to body
+        if (index < numAncestors - 1) {
+          var overflow = window.getComputedStyle(ancestor).getPropertyValue("overflow");
+          if (overflow === "auto" || overflow === "scroll") {
+            utils.addEvtListener(ancestor, 'scroll', self.scrollCb);
+          }
+        }
+      });
+
       this.isShowing = true;
       return this;
     },
@@ -958,8 +973,35 @@
         utils.addClass(el, 'invisible');
       }
       utils.removeClass(el, 'animate fade-in-up fade-in-down fade-in-right fade-in-left');
+      
+      // Remove scroll event from all target's ancestors
+      var ancestors = this.getTargetAncestors();
+
+      ancestors.forEach(function(ancestor, index) {
+        utils.removeEvtListener(ancestor, 'scroll', self.scrollCb);
+      });
+
       this.isShowing = false;
       return this;
+    },
+
+    getTargetAncestors: function() {
+      var target = utils.getStepTarget(this.currStep);
+
+      if (target) {
+        var p = target.parentNode;
+        var ancestors = [];
+
+        while (p !== null) {
+            var o = p;
+            ancestors.push(o);
+            p = o.parentNode;
+        }
+
+        return ancestors;
+      }
+
+      return [];
     },
 
     destroy: function() {
@@ -968,7 +1010,17 @@
       if (el) {
         el.parentNode.removeChild(el);
       }
+
       utils.removeEvtListener(el, 'click', this.clickCb);
+    },
+
+    /**
+     * Used for scrolling event on target ancestor
+     *
+     * @private
+     */
+    _handleScroll: function(evt) {
+      this.setPosition(this.currStep);
     },
 
     _handleBubbleClick: function(evt){
@@ -1103,6 +1155,12 @@
 
       //Add listener to reset bubble position on window resize
       utils.addEvtListener(window, 'resize', onWinResize);
+
+      //Create our scroll callback handler and keep a
+      //reference to it for later.
+      this.scrollCb = function(evt){
+        self._handleScroll(evt);
+      };
 
       //Create our click callback handler and keep a
       //reference to it for later.
@@ -1741,6 +1799,17 @@
         utils.invokeEventCallbacks('show', step.onShow);
       }
 
+      function getAncestors(el) {
+        var ancestors = [];
+        var p = el.parentNode;
+
+        while (p !== null) {
+            var o = p;
+            ancestors.push(o);
+            p = o.parentNode;
+        }
+      }
+
       if (currStepNum !== stepNum && getCurrStep().nextOnTargetClick) {
         // Detach the listener when tour is moving to a different step
         utils.removeEvtListener(utils.getStepTarget(getCurrStep()), 'click', targetClickNextFn);
@@ -1748,19 +1817,6 @@
 
       // Update bubble for current step
       currStepNum = stepNum;
-
-      var parents = [];
-      var p = utils.getStepTarget(getCurrStep()).parentNode;
-
-      while (p !== null) {
-          var o = p;
-          parents.push(o);
-          p = o.parentNode;
-      }
-
-      parents.forEach(function(parent, index) {
-        utils.removeEvtListener(parent, 'scroll', scrollFn);
-      });
 
       bubble.hide(false);
 
@@ -1772,26 +1828,6 @@
         else {
           showBubble();
         }
-
-        var parents = [];
-        var p = targetEl.parentNode;
-
-        while (p !== null) {
-            var o = p;
-            parents.push(o);
-            p = o.parentNode;
-        }
-
-        var numParents = parents.length;
-
-        parents.forEach(function(parent, index) {
-          if (index < numParents - 1) {
-            var overflow = window.getComputedStyle(parent).getPropertyValue("overflow");
-            if (overflow === "auto" || overflow === "scroll") {
-              utils.addEvtListener(parent, 'scroll', scrollFn);
-            }
-          }
-        });
 
         // If we want to advance to next step when user clicks on target.
         if (step.nextOnTargetClick) {
