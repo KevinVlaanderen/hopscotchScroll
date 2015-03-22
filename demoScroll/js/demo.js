@@ -36,6 +36,6 @@ $(function() {
     skipIfNoElement: false
   }
 
-  hopscotch.startTour(tour);
+  hopscotch.startTour(tour, 0);
 });
 
