@@ -1799,17 +1799,6 @@
         utils.invokeEventCallbacks('show', step.onShow);
       }
 
-      function getAncestors(el) {
-        var ancestors = [];
-        var p = el.parentNode;
-
-        while (p !== null) {
-            var o = p;
-            ancestors.push(o);
-            p = o.parentNode;
-        }
-      }
-
       if (currStepNum !== stepNum && getCurrStep().nextOnTargetClick) {
         // Detach the listener when tour is moving to a different step
         utils.removeEvtListener(utils.getStepTarget(getCurrStep()), 'click', targetClickNextFn);
