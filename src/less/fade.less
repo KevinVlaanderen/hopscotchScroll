@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  */
 
-@anim-duration: 1s;
 @distance: 20px;
+@fade-in-duration: 1s;
+@fade-out-duration: 0.2s;
 
 .animated {
   -webkit-animation-fill-mode: both;
@@ -31,11 +32,61 @@
   -ms-animation-fill-mode: both;
   -o-animation-fill-mode: both;
   animation-fill-mode: both;
-  -webkit-animation-duration: @anim-duration;
-  -moz-animation-duration: @anim-duration;
-  -ms-animation-duration: @anim-duration;
-  -o-animation-duration: @anim-duration;
-  animation-duration: @anim-duration;
+  -webkit-animation-duration: @fade-in-duration;
+  -moz-animation-duration: @fade-in-duration;
+  -ms-animation-duration: @fade-in-duration;
+  -o-animation-duration: @fade-in-duration;
+  animation-duration: @fade-in-duration;
+}
+
+@-webkit-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  -webkit-animation-name: fadeOut;
+  animation-name: fadeOut;
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  -webkit-animation-name: fadeIn;
+  animation-name: fadeIn;
 }
 
 @-webkit-keyframes fadeInUp {

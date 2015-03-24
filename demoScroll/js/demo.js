@@ -28,7 +28,19 @@ $(function() {
         target: '#row2',
         title: 'Welcome to Hopscotch!',
         content: 'Hey there! This is an example Hopscotch tour. There will be plenty of time to read documentation and sample code, but let\'s just take some time to see how Hopscotch actually works.',
-        placement: 'bottom'
+        placement: 'left'
+      },
+      {
+        target: '#row3',
+        title: 'Welcome to Hopscotch!',
+        content: 'Hey there! This is an example Hopscotch tour. There will be plenty of time to read documentation and sample code, but let\'s just take some time to see how Hopscotch actually works.',
+        placement: 'right'
+      },
+      {
+        target: '#row4',
+        title: 'Welcome to Hopscotch!',
+        content: 'Hey there! This is an example Hopscotch tour. There will be plenty of time to read documentation and sample code, but let\'s just take some time to see how Hopscotch actually works.',
+        placement: 'top'
       }
     ],
     showPrevButton: true,

@@ -717,7 +717,9 @@
           totalSteps,
           nextBtnText,
           isLast,
-          opts;
+          opts,
+          self = this,
+          oldTarget = utils.getStepTarget(this.currStep);
 
       // Cache current step information.
       if (step) {
@@ -796,6 +798,8 @@
         }
       };
 
+      this.opt.step = opts.step;
+
       // Render the bubble's content.
       // Use tour renderer if available, then the global customRenderer if defined.
       if(typeof tourSpecificRenderer === 'function'){
@@ -834,6 +838,7 @@
 
       // Set bubble positioning
       // Make sure we're using visibility:hidden instead of display:none for height/width calculations.
+      //this.hide();
       this.hide(false);
       this.setPosition(step);
 
@@ -841,6 +846,30 @@
       if (callback) {
         callback(!step.fixedElement);
       }
+
+      if (this.oldTarget) {
+        // Remove scroll event from all target's ancestors
+        var oldAncestors = this.getAncestors(this.oldTarget);
+
+        oldAncestors.forEach(function(ancestor, index) {
+          utils.removeEvtListener(ancestor, 'scroll', self.scrollCb);
+        });
+      }   
+
+      // Add scroll event to new target's scrolling ancestors
+      var currTarget = utils.getStepTarget(this.currStep);
+      var currAncestors = this.getAncestors(currTarget);
+      var numAncestors = currAncestors.length;
+
+      currAncestors.forEach(function(ancestor, index) {
+        // Do not attach event to body
+        if (index < numAncestors - 1) {
+          var overflow = window.getComputedStyle(ancestor).getPropertyValue("overflow");
+          if (overflow === "auto" || overflow === "scroll") {
+            utils.addEvtListener(ancestor, 'scroll', self.scrollCb);
+          }
+        }
+      });
 
       return this;
     },
@@ -923,6 +952,48 @@
       }
     },
 
+    fadein: function() {
+      if (this.isFaded) {
+        var self      = this,
+            fadeClass = 'fade-in',
+            fadeDur   = 500;
+
+        //utils.removeClass(this.element, 'hide');
+        utils.addClass(this.element, fadeClass);
+        utils.removeClass(self.element, 'invisible');
+        //setTimeout(function() {
+        //  utils.removeClass(self.element, 'invisible');
+        //}, 50);
+        setTimeout(function() {
+          utils.removeClass(self.element, fadeClass);
+        }, fadeDur);
+
+        this.isFaded = false;
+      }
+    },
+
+    fadeout: function() {
+      if (!this.isFaded) {
+        var self      = this,
+            fadeClass = 'fade-out',
+            fadeDur   = 200;
+
+        utils.addClass(this.element, fadeClass);
+
+        this.pauseScroll = true;
+        setTimeout(function() {
+          self.pauseScroll = false;
+        }, fadeDur);
+
+        setTimeout(function() {
+          utils.addClass(self.element, 'invisible');
+          utils.removeClass(self.element, fadeClass);
+        }, fadeDur);
+
+        this.isFaded = true;
+      }
+    },
+
     show: function() {
       var self      = this,
           fadeClass = 'fade-in-' + this._getArrowDirection(),
@@ -937,26 +1008,15 @@
         utils.removeClass(self.element, fadeClass);
       }, fadeDur);
 
-      // Add scroll event to new target's scrolling ancestors
-      var ancestors = self.getTargetAncestors();
-      var numAncestors = ancestors.length;
-
-      ancestors.forEach(function(ancestor, index) {
-        // Do not attach event to body
-        if (index < numAncestors - 1) {
-          var overflow = window.getComputedStyle(ancestor).getPropertyValue("overflow");
-          if (overflow === "auto" || overflow === "scroll") {
-            utils.addEvtListener(ancestor, 'scroll', self.scrollCb);
-          }
-        }
-      });
-
       this.isShowing = true;
       return this;
     },
 
     hide: function(remove) {
-      var el = this.element;
+      var self      = this,
+          el        = this.element,
+          fadeClass = 'fade-out',
+          fadeDur   = 500;
 
       remove = utils.valOrDefault(remove, true);
       el.style.top = '';
@@ -964,8 +1024,8 @@
 
       // display: none
       if (remove) {
-        utils.addClass(el, 'hide');
         utils.removeClass(el, 'invisible');
+        utils.addClass(el, 'hide');
       }
       // opacity: 0
       else {
@@ -973,21 +1033,12 @@
         utils.addClass(el, 'invisible');
       }
       utils.removeClass(el, 'animate fade-in-up fade-in-down fade-in-right fade-in-left');
-      
-      // Remove scroll event from all target's ancestors
-      var ancestors = this.getTargetAncestors();
-
-      ancestors.forEach(function(ancestor, index) {
-        utils.removeEvtListener(ancestor, 'scroll', self.scrollCb);
-      });
 
       this.isShowing = false;
       return this;
     },
 
-    getTargetAncestors: function() {
-      var target = utils.getStepTarget(this.currStep);
-
+    getAncestors: function(target) {
       if (target) {
         var p = target.parentNode;
         var ancestors = [];
@@ -1020,7 +1071,41 @@
      * @private
      */
     _handleScroll: function(evt) {
-      this.setPosition(this.currStep);
+      if (this.isShowing && !this.pauseScroll) {
+        this.setPosition(this.currStep);
+
+        var bubbleRect = this.element.getBoundingClientRect();
+        var targetRect = evt.currentTarget.getBoundingClientRect();
+      
+        if (this.placement === 'bottom' || this.placement === 'top') {
+          var edgeTop = this.placement === 'bottom' ? bubbleRect.top - this.opt.arrowWidth : bubbleRect.top;
+          var edgeBottom = this.placement === 'top' ? bubbleRect.bottom + this.opt.arrowWidth : bubbleRect.bottom;
+
+          if (!this.isFaded) {
+            if (edgeTop < targetRect.top || edgeBottom > targetRect.bottom) {
+              this.fadeout();
+            }
+          } else {
+            if (edgeTop > targetRect.top && edgeBottom < targetRect.bottom) {
+              this.fadein();
+            }
+          }
+        } else if (this.placement === 'left' || this.placement === 'right') {
+          var edgeLeft = this.placement === 'right' ? bubbleRect.left - this.opt.arrowWidth : bubbleRect.left;
+          var edgeRight = this.placement === 'left' ? bubbleRect.right + this.opt.arrowWidth : bubbleRect.right;
+
+          if (!this.isFaded) {
+            if (edgeLeft < targetRect.left || edgeRight > targetRect.right) {
+              this.fadeout();
+            }
+          } else {
+            if (edgeLeft > targetRect.left && edgeRight < targetRect.right) {
+              this.fadein();
+            }
+          }
+        }
+        
+      }
     },
 
     _handleBubbleClick: function(evt){
